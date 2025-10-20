@@ -1,38 +1,35 @@
-/**
- * Use this component to only initialize Nexus when required or with a button click
- * Remove the use effect in @NexusProvider to stop auto init process
- */
+'use client';
 
-import { useAccount } from "wagmi";
-import { Button } from "./ui/button";
-import { useNexus } from "@/providers/NexusProvider";
-import { ClockFading } from "lucide-react";
-import { useState } from "react";
+import { useAccount } from 'wagmi';
+import { useNexus } from '@/providers/NexusProvider';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
-const NexusInitButton = () => {
-  const { status } = useAccount();
+export default function NexusInit({ onReady }: { onReady: () => void }) {
+  const { isConnected } = useAccount();
   const { handleInit, nexusSDK } = useNexus();
-  const [loading, setLoading] = useState(false);
 
-  const handleInitWithLoading = async () => {
-    setLoading(true);
-    await handleInit();
-    setLoading(false);
-  };
-
-  if (status === "connected" && !nexusSDK?.isInitialized()) {
-    return (
-      <Button onClick={handleInitWithLoading}>
-        {loading ? (
-          <ClockFading className="animate-spin size-5 text-primary-foreground" />
-        ) : (
-          "Connect Nexus"
-        )}
-      </Button>
-    );
+  if (!isConnected) {
+    return null;
   }
 
-  return null;
-};
+  if (nexusSDK?.isInitialized()) {
+    onReady();
+    return null;
+  }
 
-export default NexusInitButton;
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Initialize Nexus</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col items-center gap-4">
+        <p>
+          To view your unified balance and use the cross-chain features,
+          you first need to initialize the Avail Nexus SDK.
+        </p>
+        <Button onClick={handleInit}>Initialize Nexus SDK</Button>
+      </CardContent>
+    </Card>
+  );
+}

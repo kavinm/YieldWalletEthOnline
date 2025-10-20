@@ -10,29 +10,35 @@ import {
   AccordionTrigger,
 } from "./ui/accordion";
 import { SelectSeparator } from "./ui/select";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+import { Button } from "./ui/button";
 
-const NexusUnifiedBalance = () => {
-  const [unifiedBalance, setUnifiedBalance] = useState<UserAsset[] | undefined>(
+const UnifiedBalance = () => {
+  const [pyusdBalance, setPyusdBalance] = useState<UserAsset | undefined>(
     undefined,
   );
   const [isLoading, setIsLoading] = useState(false);
   const { nexusSDK } = useNexus();
-  const fetchUnifiedBalance = async () => {
+
+  const fetchPyusdBalance = async () => {
     setIsLoading(true);
     try {
-      const balance = await nexusSDK?.getUnifiedBalances();
-      console.log("Unified Balance:", balance);
-      setUnifiedBalance(balance);
+      // Fetch only PYUSD balance
+      const balance = await nexusSDK?.getUnifiedBalance("PYUSD");
+      console.log("PYUSD Balance:", balance);
+      setPyusdBalance(balance);
     } catch (error) {
-      console.error("Error fetching unified balance:", error);
+      console.error("Error fetching PYUSD balance:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUnifiedBalance();
-  }, []);
+    if (nexusSDK?.isInitialized()) {
+      fetchPyusdBalance();
+    }
+  }, [nexusSDK]);
 
   const formatBalance = (balance: string, decimals: number) => {
     const num = parseFloat(balance);
@@ -41,98 +47,96 @@ const NexusUnifiedBalance = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-2xl mx-auto p-4 text-center flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="w-full text-center p-4">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto" />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-lg mx-auto p-4 flex flex-col gap-y-2 items-center overflow-y-scroll max-h-[272px] rounded-lg border border-border">
-      <div className="flex items-ceter justify-start w-full">
-        <Label className="font-semibold text-muted-foreground">
-          Total Balance:
-        </Label>
-
-        <Label className="text-lg font-bold gap-x-0">
-          <DollarSign className="w-4 h-4 font-bold" strokeWidth={3} />
-          {unifiedBalance
-            ?.reduce((acc, fiat) => acc + fiat.balanceInFiat, 0)
-            .toFixed(2)}
-        </Label>
-      </div>
-      <Accordion type="single" collapsible className="w-full space-y-4">
-        {unifiedBalance
-          ?.filter((token) => parseFloat(token.balance) > 0)
-          .map((token) => (
-            <AccordionItem
-              key={token.symbol}
-              value={token.symbol}
-              className="px-4 !shadow-[var(--ck-connectbutton-box-shadow)] !rounded-[var(--ck-connectbutton-border-radius)]"
-            >
-              <AccordionTrigger className="hover:no-underline cursor-pointer">
-                <div className="flex items-center justify-between w-full pr-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-8 w-8">
-                      {token.icon && (
+    <Card>
+      <CardHeader>
+        <CardTitle>Your PYUSD Balance</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {pyusdBalance && parseFloat(pyusdBalance.balance) > 0 ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-2xl font-bold">
+              <Label>Total Balance:</Label>
+              <div className="flex items-center">
+                <DollarSign className="w-6 h-6 mr-1" strokeWidth={3} />
+                {pyusdBalance.balanceInFiat.toFixed(2)}
+              </div>
+            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value={pyusdBalance.symbol}>
+                <AccordionTrigger>
+                  <div className="flex items-center justify-between w-full pr-4">
+                    <div className="flex items-center gap-3">
+                      {pyusdBalance.icon && (
                         <img
-                          src={token.icon}
-                          alt={token.symbol}
-                          className="rounded-full"
+                          src={pyusdBalance.icon}
+                          alt={pyusdBalance.symbol}
+                          className="h-8 w-8 rounded-full"
                         />
                       )}
+                      <div className="text-left">
+                        <h3 className="font-semibold">{pyusdBalance.symbol}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          ${pyusdBalance.balanceInFiat.toFixed(2)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold">{token.symbol}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        ${token.balanceInFiat.toFixed(2)}
-                      </p>
-                    </div>
+                    <p className="text-lg font-medium">
+                      {formatBalance(pyusdBalance.balance, pyusdBalance.decimals)}
+                    </p>
                   </div>
-                  <p className="text-lg font-medium">
-                    {formatBalance(token.balance, 6)}
-                  </p>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-3 py-2">
-                  {token.breakdown
-                    .filter((chain) => parseFloat(chain.balance) > 0)
-                    .map((chain, index, filteredChains) => (
-                      <Fragment key={chain.chain.id}>
-                        <div className="flex items-center justify-between px-2 py-1 rounded-md">
-                          <div className="flex items-center gap-2">
-                            <div className="relative h-6 w-6">
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 pt-2">
+                    {pyusdBalance.breakdown
+                      .filter((chain) => parseFloat(chain.balance) > 0)
+                      .map((chain, index, filteredChains) => (
+                        <Fragment key={chain.chain.id}>
+                          <div className="flex items-center justify-between px-2 py-1">
+                            <div className="flex items-center gap-2">
                               <img
-                                src={CHAIN_METADATA[chain?.chain?.id]?.logo}
+                                src={CHAIN_METADATA[chain.chain.id]?.logo}
                                 alt={chain.chain.name}
-                                sizes="100%"
-                                className="rounded-full"
+                                className="h-6 w-6 rounded-full"
                               />
+                              <span className="text-sm">{chain.chain.name}</span>
                             </div>
-                            <span className="text-sm">{chain.chain.name}</span>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">
+                                {formatBalance(chain.balance, chain.decimals)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                ${chain.balanceInFiat.toFixed(2)}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium">
-                              {formatBalance(chain.balance, chain.decimals)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              ${chain.balanceInFiat.toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                        {index < filteredChains.length - 1 && (
-                          <SelectSeparator className="my-2" />
-                        )}
-                      </Fragment>
-                    ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-      </Accordion>
-    </div>
+                          {index < filteredChains.length - 1 && (
+                            <SelectSeparator />
+                          )}
+                        </Fragment>
+                      ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+            <Button className="w-full" size="lg">
+                Start Earning
+            </Button>
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground">
+            You do not have any PYUSD in your wallet.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
-export default NexusUnifiedBalance;
+export default UnifiedBalance;

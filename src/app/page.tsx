@@ -1,34 +1,48 @@
-"use client";
+'use client';
 
-import ConnectWallet from "@/components/blocks/connect-wallet";
-import Nexus from "@/components/nexus";
-import NexusInitButton from "@/components/nexus-init";
-import { useNexus } from "@/providers/NexusProvider";
+import { useState } from 'react';
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import NexusInit from '@/components/nexus-init';
+import UnifiedBalance from '@/components/unified-balance';
+import StartEarning from '@/components/bridge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
-export default function Home() {
-  const { nexusSDK } = useNexus();
+export default function Page() {
+  const { isConnected } = useAccount();
+  const [initialized, setInitialized] = useState(false);
+
   return (
-    <div className="font-sans flex flex-col items-center justify-items-center min-h-screen p-8 pb-20 gap-y-6 sm:p-20">
-      <h1 className="text-3xl font-semibold z-10">
-        Avail Nexus Next.js template
-      </h1>
-      <h2 className="text-lg font-semibold z-10">
-        Do you first transaction in seconds
-      </h2>
-      <div className="flex gap-x-4 items-center justify-center z-10">
-        <ConnectWallet />
-        <NexusInitButton />
+    <main className="min-h-screen container py-10">
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-4xl font-bold">Yield Nexus</h1>
+        <ConnectButton />
       </div>
-      {nexusSDK?.isInitialized() && <Nexus />}
-      <div
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `
-            radial-gradient(125% 125% at 50% 10%, #ffffff 40%, #14b8a6 100%)
-          `,
-          backgroundSize: "100% 100%",
-        }}
-      />
-    </div>
+
+      {!isConnected ? (
+        <div className="flex items-center justify-center h-[60vh]">
+          <Card className="w-full max-w-md text-center">
+            <CardHeader>
+              <CardTitle>Welcome</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Please connect your wallet to proceed.</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          <NexusInit onReady={() => setInitialized(true)} />
+          {initialized && (
+            <>
+              <UnifiedBalance />
+              <Separator />
+              <StartEarning />
+            </>
+          )}
+        </div>
+      )}
+    </main>
   );
 }
