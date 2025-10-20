@@ -1,3 +1,18 @@
-# Nexus Next.js Template
-- Get started in seconds
-- Be careful when using turbopack, you will have to add appropriate polyfills
+ ## Step 1: Reading Balances (Avail Nexus)
+What it does: When you connect your wallet, the frontend uses the Avail Nexus SDK's getUnifiedBalance('PYUSD') function.
+Why it's used: This is Avail Nexus's strength. It queries multiple blockchains (Ethereum, Solana, etc.) and presents a single, aggregated balance to the user. This gives the user a simple, unified view of their assets without needing to switch networks.
+
+ ## Step 2: The "Instant" Deposit (Nitrolite State Channels)
+What it does: When you click "Deposit & Earn (Instant)", you are not performing an on-chain transaction. Instead, you are using the Nitrolite SDK to create an off-chain application session with our simulated Hot Wallet.
+How it works:
+Your browser signs a message (createAppSessionMessage) that says, "I am allocating X amount of PYUSD to the Hot Wallet."
+This message is sent to the public ClearNode.
+The Hot Wallet (also connected to the ClearNode) receives this message.
+Why it's used: This entire process is just a few messages passed over a WebSocket. It's instantaneous from your perspective. The UI can immediately show "Deposit successful!" because the funds are now committed to the hot wallet within the off-chain state channel.
+
+## Step 3: The Background On-Chain Execution (Avail Nexus)
+What it does: Now that the Hot Wallet has control of your PYUSD in the state channel, it needs to actually move funds into the on-chain yield vault.
+How it works:
+Our simulated HotWalletProvider logs a message saying it's starting the on-chain work.
+In a real backend, the operator would now use the Avail Nexus SDK's bridgeAndExecute function.
+Why it's used: This is the other superpower of Avail Nexus. The operator doesn't need to worry about where its own liquidity is. It can just tell Nexus, "Take 100 PYUSD from wherever I have it, bridge it to Ethereum Mainnet, and call the deposit function on this Yearn Vault contract." Nexus handles all the complex routing and bridging automatically.
