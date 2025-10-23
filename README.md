@@ -24,6 +24,9 @@ Why it's used: This is the other superpower of Avail Nexus. The operator doesn't
 
 ## Resources
 
+- [PYUSD Paxos Faucet](https://faucet.paxos.com/).
+- [PYUSD Developer Portal](https://linktr.ee/pyusd_dev).
+
 #### PYUSD Token Contracts
 
 | Chain            | Address                                                                                                                      |
@@ -32,5 +35,3 @@ Why it's used: This is the other superpower of Avail Nexus. The operator doesn't
 | Ethereum Sepolia | [0xcac524bca292aaade2df8a05cc58f0a65b1b3bb9](https://sepolia.etherscan.io/token/0xcac524bca292aaade2df8a05cc58f0a65b1b3bb9)  |
 | Arbitrum Mainnet | [0x46850aD61C2B7d64d08c9C754F45254596696984](https://arbiscan.io/address/0x46850ad61c2b7d64d08c9c754f45254596696984)         |
 | Arbitrum Sepolia | [0x637A1259C6afd7E3AdF63993cA7E58BB438aB1B1](https://sepolia.arbiscan.io/address/0x637a1259c6afd7e3adf63993ca7e58bb438ab1b1) |
-
-More resources can be found [here](https://linktr.ee/pyusd_dev).
