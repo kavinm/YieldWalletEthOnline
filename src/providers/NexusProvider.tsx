@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable react-refresh/only-export-components */
 import useInitNexus from "@/hooks/useInitNexus";
 import {
   NexusSDK,
@@ -31,7 +30,7 @@ const NexusProvider = ({ children }: { children: React.ReactNode }) => {
         network: "mainnet",
         debug: true,
       }),
-    [],
+    []
   );
   const { status } = useAccount();
   const {
@@ -60,7 +59,9 @@ const NexusProvider = ({ children }: { children: React.ReactNode }) => {
     //   handleInit();
     // }
     if (status === "disconnected") {
-      deinitializeNexus();
+      deinitializeNexus().catch((error) => {
+        console.error("Failed to deinitialize Nexus on disconnect:", error);
+      });
     }
   }, [status, deinitializeNexus]);
 
@@ -71,7 +72,7 @@ const NexusProvider = ({ children }: { children: React.ReactNode }) => {
       allowanceRefCallback,
       handleInit,
     }),
-    [nexusSDK, intentRefCallback, allowanceRefCallback, handleInit],
+    [nexusSDK, intentRefCallback, allowanceRefCallback, handleInit]
   );
 
   return (

@@ -17,7 +17,11 @@ const useInitNexus = (sdk: NexusSDK) => {
 
   const initializeNexus = async () => {
     try {
-      if (sdk.isInitialized()) throw new Error("Nexus is already initialized");
+      if (sdk.isInitialized()) {
+        console.log("Nexus is already initialized");
+        setNexusSDK(sdk);
+        return;
+      }
       const provider = (await connector?.getProvider()) as EthereumProvider;
       if (!provider) throw new Error("No provider found");
       await sdk.initialize(provider);
@@ -29,11 +33,17 @@ const useInitNexus = (sdk: NexusSDK) => {
 
   const deinitializeNexus = async () => {
     try {
-      if (!sdk.isInitialized()) throw new Error("Nexus is not initialized");
+      if (!sdk.isInitialized()) {
+        console.log("Nexus is not initialized, skipping deinitialization");
+        setNexusSDK(null);
+        return;
+      }
       await sdk.deinit();
       setNexusSDK(null);
     } catch (error) {
       console.error("Error deinitializing Nexus:", error);
+      // Even if deinit fails, we should clear the state
+      setNexusSDK(null);
     }
   };
 
